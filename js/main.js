@@ -5,128 +5,146 @@ const searchInput = document.getElementById("searchInput");
 const filterTaskType1 = document.getElementById("filterTaskType1");
 const filterTaskType2 = document.getElementById("filterTaskType2");
 const filterTaskType3 = document.getElementById("filterTaskType3");
-const taskList = [];
-let currentEditTask = 0;
 
 addTaskBtn.onclick = function () {
 	const taskDescription = document.getElementById("addTaskDescription");
 	const taskType = document.getElementById("addTaskType");
-	const newTask = {
-		description: taskDescription.value,
-		type: taskType.value
-	}
 
-	taskList[taskList.length] = newTask;
+	const rowEl = document.createElement("TR");
+	rowEl.id = "task-" + taskListWrapper.children.length;
+	rowEl.innerHTML = '<th scope="row">' + taskListWrapper.children.length + '</th>'
+    	+ '<td>' + taskDescription.value + '</td>'
+    	+ '<td>' + taskType.value + '</td>'
+    	+ '<td>'
+        	+ '<button type="button" class="btn btn-primary me-2" data-bs-toggle="modal"'
+            + 'data-bs-target="#editTaskModal" onclick="openEditForm(' + taskListWrapper.children.length + ')">'
+            + 'Edit'
+        	+ '</button>'
+        	+ '<button type="button" class="btn btn-danger" onclick="deleteTask(' + taskListWrapper.children.length + ')">Delete</button>'
+    	+ '</td>';
+
+	taskListWrapper.appendChild(rowEl);
+
 	taskDescription.value = "Add Description";
 	taskType.selectedIndex = 0;
-	renderTaskList();
 }
 
 editTaskBtn.onclick = function () {
 	const taskDescription = document.getElementById("editTaskDescription");
 	const taskType = document.getElementById("editTaskType");
-
-	taskList[currentEditTask].description = taskDescription.value;
-	taskList[currentEditTask].type = taskType.value;
-	renderTaskList();
+	taskListWrapper.children[currentEditTask].children[1].textContent = taskDescription.value;
+	taskListWrapper.children[currentEditTask].children[2].textContent = taskType.value;
 }
 
 function renderTaskList() {
-	let taskListHtml = "";
 	if (searchInput.value) {
-		let filteredArray = [...taskList];
-		let newFilteredArray = filteredArray.filter(item => item.description.match(new RegExp(searchInput.value, "i")));
-		let typefilteredTask = getTypefilter(newFilteredArray);
-		for (let i = 0; i < typefilteredTask.length; i++) {
-			taskListHtml += renderTaskRow(typefilteredTask[i], i);
-		}
+		renderFilteredTasks();
 	} else {
-		let typefilteredTask = getTypefilter(taskList);
-		for (let i = 0; i < typefilteredTask.length; i++) {
-			taskListHtml += renderTaskRow(typefilteredTask[i], i);
+		if (filterTaskType1.checked || filterTaskType2.checked || filterTaskType3.checked) { 
+			renderFilteredTasks();
+		} else {
+			for (let i = 0; i < taskListWrapper.children.length; i++) {
+				taskListWrapper.children[i].style.display = 'table-row';
+			}
 		}
 	}
-	taskListWrapper.innerHTML = taskListHtml;
-}
-
-function renderTaskRow(task, i) {
-	return `<tr id="task-${i}">
-    <th scope="row">${i + 1}</th>
-    <td>${task.description}</td>
-    <td>${task.type}</td>
-    <td>
-        <button type="button" class="btn btn-primary" data-bs-toggle="modal"
-            data-bs-target="#editTaskModal" onclick="openEditForm(${i})">
-            Edit
-        </button>
-        <button type="button" class="btn btn-danger" onclick="deleteTask(${i})">Delete</button>
-    </td>
-</tr>`
 }
 
 function openEditForm(i) {
 	currentEditTask = i;
-	document.getElementById("editTaskDescription").value = taskList[i].description;
-	document.getElementById("editTaskType").value = taskList[i].type;
+	document.getElementById("editTaskDescription").value = taskListWrapper.children[i].children[1].textContent;
+	document.getElementById("editTaskType").value = taskListWrapper.children[i].children[2].textContent;
 }
 
 function deleteTask(i) {
-	taskList.splice(i, 1);
-	renderTaskList();
+	taskListWrapper.removeChild(taskListWrapper.children[i]);
 }
 
 searchInput.addEventListener('keyup', function () {
 	renderTaskList();
 });
 
-function getTypefilter(val) {
-	let filteredArray = [];
+function renderFilteredTasks() {
+	const taskC = taskListWrapper.children;
 	if (filterTaskType1.checked && filterTaskType2.checked && filterTaskType3.checked) {
-		return val;
+		for (let i = 0; i < taskC.length; i++) {
+			if (taskC[i].children[1].textContent.search(searchInput.value) > -1) {
+				taskC[i].style.display = 'table-row';
+			} else {
+				taskC[i].style.display = 'none';
+			}
+		}
 	} else if (filterTaskType1.checked && filterTaskType2.checked) {
-		for(let i = 0; i < val.length; i++) {
-			if (val[i].type == 1 || val[i].type == 2) {
-				filteredArray[filteredArray.length] = val[i];
+		for (let i = 0; i < taskC.length; i++) {
+			if (filterTaskType1.value == taskC[i].children[2].textContent
+				|| filterTaskType2.value == taskC[i].children[2].textContent && (searchInput
+					&& taskC[i].children[1].textContent.search(searchInput.value) > -1)) {
+				taskC[i].style.display = 'table-row';
+			} else {
+				taskC[i].style.display = 'none';
 			}
 		}
-		return filteredArray;
 	} else if (filterTaskType2.checked && filterTaskType3.checked) {
-		for(let i = 0; i < val.length; i++) {
-			if (val[i].type == 2 || val[i].type == 3) {
-				filteredArray[filteredArray.length] = val[i];
+		for (let i = 0; i < taskC.length; i++) {
+			if (filterTaskType2.value == taskC[i].children[2].textContent
+				|| filterTaskType3.value == taskC[i].children[2].textContent && (searchInput
+					&& taskC[i].children[1].textContent.search(searchInput.value) > -1)) {
+				taskC[i].style.display = 'table-row';
+			} else {
+				taskC[i].style.display = 'none';
 			}
 		}
-		return filteredArray;
 	} else if (filterTaskType1.checked && filterTaskType3.checked) {
-		for(let i = 0; i < val.length; i++) {
-			if (val[i].type == 1 || val[i].type == 3) {
-				filteredArray[filteredArray.length] = val[i];
+		for (let i = 0; i < taskC.length; i++) {
+			if (filterTaskType1.value == taskC[i].children[2].textContent
+				|| filterTaskType3.value == taskC[i].children[2].textContent && (searchInput
+					&& taskC[i].children[1].textContent.search(searchInput.value) > -1)) {
+				taskC[i].style.display = 'table-row';
+			} else {
+				taskC[i].style.display = 'none';
 			}
 		}
-		return filteredArray;
 	} else if (filterTaskType1.checked) {
-		for(let i = 0; i < val.length; i++) {
-			if (val[i].type == 1) {
-				filteredArray[filteredArray.length] = val[i];
+		for (let i = 0; i < taskC.length; i++) {
+			if (filterTaskType1.value == taskC[i].children[2].textContent && (searchInput
+				&& taskC[i].children[1].textContent.search(searchInput.value) > -1)) {
+				taskC[i].style.display = 'table-row';
+			} else {
+				taskC[i].style.display = 'none';
 			}
 		}
-		return filteredArray;
 	} else if (filterTaskType2.checked) {
-		for(let i = 0; i < val.length; i++) {
-			if (val[i].type == 2) {
-				filteredArray[filteredArray.length] = val[i];
+		for (let i = 0; i < taskC.length; i++) {
+			if (filterTaskType2.value == taskC[i].children[2].textContent && (searchInput
+				&& taskC[i].children[1].textContent.search(searchInput.value) > -1)) {
+				taskC[i].style.display = 'table-row';
+			} else {
+				taskC[i].style.display = 'none';
 			}
 		}
-		return filteredArray;
 	} else if (filterTaskType3.checked) {
-		for(let i = 0; i < val.length; i++) {
-			if (val[i].type == 1) {
-				filteredArray[filteredArray.length] = val[i];
+		for (let i = 0; i < taskChildren.length; i++) {
+			if (filterTaskType3.value == taskC[i].children[2].textContent && (searchInput
+				&& taskC[i].children[1].textContent.search(searchInput.value) > -1)) {
+				taskC[i].style.display = 'table-row';
+			} else {
+				taskC[i].style.display = 'none';
 			}
 		}
-		return filteredArray;
 	} else {
-		return val;
+		if(searchInput) {
+			for (let i = 0; i < taskListWrapper.children.length; i++) {
+				if(taskC[i].children[1].textContent.search(searchInput.value) > -1) {
+					taskC[i].style.display = 'table-row';
+				} else {
+					taskC[i].style.display = 'none';
+				}
+			}
+		} else {
+			for (let i = 0; i < taskC.length; i++) {
+				taskChildren[i].style.display = 'table-row';
+			}
+		}
 	}
 }
 
