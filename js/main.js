@@ -16,7 +16,7 @@ addTaskBtn.onclick = function () {
 		type: taskType.value
 	}
 
-	taskList.push(newTask);
+	taskList[taskList.length] = newTask;
 	taskDescription.value = "Add Description";
 	taskType.selectedIndex = 0;
 	renderTaskList();
@@ -37,14 +37,14 @@ function renderTaskList() {
 		let filteredArray = [...taskList];
 		let newFilteredArray = filteredArray.filter(item => item.description.match(new RegExp(searchInput.value, "i")));
 		let typefilteredTask = getTypefilter(newFilteredArray);
-		typefilteredTask.forEach((task, i) => {
-			taskListHtml += renderTaskRow(task, i);
-		});
+		for (let i = 0; i < typefilteredTask.length; i++) {
+			taskListHtml += renderTaskRow(typefilteredTask[i], i);
+		}
 	} else {
 		let typefilteredTask = getTypefilter(taskList);
-		typefilteredTask.forEach((task, i) => {
-			taskListHtml += renderTaskRow(task, i);
-		});
+		for (let i = 0; i < typefilteredTask.length; i++) {
+			taskListHtml += renderTaskRow(typefilteredTask[i], i);
+		}
 	}
 	taskListWrapper.innerHTML = taskListHtml;
 }
@@ -80,23 +80,53 @@ searchInput.addEventListener('keyup', function () {
 });
 
 function getTypefilter(val) {
-	let filteredArray = [ ...val ];
+	let filteredArray = [];
 	if (filterTaskType1.checked && filterTaskType2.checked && filterTaskType3.checked) {
-		return filteredArray.filter(item => item.type == 1 || item.type == 2 || item.type == 3);
+		return val;
 	} else if (filterTaskType1.checked && filterTaskType2.checked) {
-		return filteredArray.filter(item => item.type == 1 || item.type == 2);
-	} else if (filterTaskType2.checked && filterTaskType3.checked) {
-		return filteredArray.filter(item => item.type == 2 || item.type == 3);
-	} else if (filterTaskType1.checked && filterTaskType3.checked) {
-		return filteredArray.filter(item => item.type == 1 || item.type == 3);
-	} else if (filterTaskType1.checked) {
-		return filteredArray.filter(item => item.type == 1);
-	} else if (filterTaskType2.checked) {
-		return filteredArray.filter(item => item.type == 2);
-	} else if (filterTaskType3.checked) {
-		return filteredArray.filter(item => item.type == 3);
-	} else {
+		for(let i = 0; i < val.length; i++) {
+			if (val[i].type == 1 || val[i].type == 2) {
+				filteredArray[filteredArray.length] = val[i];
+			}
+		}
 		return filteredArray;
+	} else if (filterTaskType2.checked && filterTaskType3.checked) {
+		for(let i = 0; i < val.length; i++) {
+			if (val[i].type == 2 || val[i].type == 3) {
+				filteredArray[filteredArray.length] = val[i];
+			}
+		}
+		return filteredArray;
+	} else if (filterTaskType1.checked && filterTaskType3.checked) {
+		for(let i = 0; i < val.length; i++) {
+			if (val[i].type == 1 || val[i].type == 3) {
+				filteredArray[filteredArray.length] = val[i];
+			}
+		}
+		return filteredArray;
+	} else if (filterTaskType1.checked) {
+		for(let i = 0; i < val.length; i++) {
+			if (val[i].type == 1) {
+				filteredArray[filteredArray.length] = val[i];
+			}
+		}
+		return filteredArray;
+	} else if (filterTaskType2.checked) {
+		for(let i = 0; i < val.length; i++) {
+			if (val[i].type == 2) {
+				filteredArray[filteredArray.length] = val[i];
+			}
+		}
+		return filteredArray;
+	} else if (filterTaskType3.checked) {
+		for(let i = 0; i < val.length; i++) {
+			if (val[i].type == 1) {
+				filteredArray[filteredArray.length] = val[i];
+			}
+		}
+		return filteredArray;
+	} else {
+		return val;
 	}
 }
 
